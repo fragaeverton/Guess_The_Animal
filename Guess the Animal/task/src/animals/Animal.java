@@ -7,15 +7,12 @@ public class Animal {
     private String article;
     private String name;
     private Status status;
+    private String attribute;
 
     public Animal(String[] answer) {
         this.name = setName(answer);
         this.article = setArticle(answer);
         this.status = Status.UNCLEAR;
-    }
-
-    public String getArticle() {
-        return article;
     }
 
     public String setArticle(String[] answer) {
@@ -49,27 +46,26 @@ public class Animal {
                 || "a".equalsIgnoreCase(answer[0])
                 || "the".equalsIgnoreCase(answer[0])) {
             IntStream.rangeClosed(1, answer.length - 1)
-                    .forEach(s -> sb.append(" " + answer[s]));
+                    .forEach(s -> sb.append(" ").append(answer[s]));
         } else{
             IntStream.rangeClosed(0, answer.length - 1)
-                    .forEach(s -> sb.append(" " + answer[s]));
+                    .forEach(s -> sb.append(" ").append(answer[s]));
         }
         return sb.toString().toLowerCase().trim();
     }
 
-    public Status getStatus() {
-        return status;
+    public String getArticleName() {
+        return article + " " + name;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setAttribute(Fact facts) {
+        this.attribute = facts.getFullAttributes();
     }
 
     @Override
     public String toString() {
-        return article + " " + name;
+        return " - The " + name + " " + attribute;
     }
-
 
 
     public enum Status{

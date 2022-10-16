@@ -3,75 +3,75 @@ package animals;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static animals.Constants.*;
-import static animals.Utils.findInRegex;
+import static animals.Messages.*;
 
 public class Main {
-
+    static Fact fact;
     public static void main(String[] args) {
 
         LocalTime time = LocalTime.now();
         Scanner sc = new Scanner(System.in);
-        System.out.println(greet(time));
 
-        System.out.println("Enter an animal:");
-        Animal animal = new Animal(sc.nextLine().split(" "));
+        greet(time);
 
-        System.out.printf("Is it %s?\n", animal);
-        checkAnimalStatus(sc.nextLine(), animal, true);
+        askFirstAnimal();
+        Animal animalOne = new Animal(sc.nextLine().split(" "));
 
-        while (animal.getStatus().equals(Animal.Status.UNCLEAR)){
-            printSortedItemList(new ArrayList<>(List.of(QUESTIONS_LIST)));
-            checkAnimalStatus(sc.nextLine(), animal, false);
+        askSecondAnimal();
+        Animal animalTwo = new Animal(sc.nextLine().split(" "));
+
+        askingFacts(animalOne, animalTwo);
+        String facts = sc.nextLine();
+        boolean validFact = checkFact(facts);
+        while (!validFact){
+            showExamples();
+            askingFacts(animalOne, animalTwo);
+            facts = sc.nextLine();
+            validFact = checkFact(facts);
         }
-        System.out.println("You answered: " + (animal.getStatus().equals(Animal.Status.YES) ? "Yes" : "No") );
+
+        askingFactForAnimal(animalTwo);
+        String s = sc.nextLine().toUpperCase();
+        while (!(s.equals("YES") || s.equals("NO"))){
+            System.out.println("yes or no");
+            askingFactForAnimal(animalTwo);
+            s = sc.nextLine().toUpperCase();
+        }
+        boolean isAttribute = s.equals("YES");
+        if(isAttribute){
+            animalTwo.setAttribute(fact);
+            fact.negateVerb();
+            animalOne.setAttribute(fact);
+        }else{
+            animalOne.setAttribute(fact);
+            fact.negateVerb();
+            animalTwo.setAttribute(fact);
+        }
+
+        printFacts(animalOne, animalTwo);
+        showSkills(fact);
         printSortedItemList(new ArrayList<>(List.of(FAREWELL_LIST)));
 
+    }
+
+    private static boolean checkFact(String f) {
+        Pattern pattern = Pattern.compile("(It can|It has|It is)", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(f);
+        boolean m = matcher.find();
+        if(m){
+            fact = new Fact(f.substring(matcher.start() + 3).trim());
+        }
+        return m;
     }
 
     private static void printSortedItemList(ArrayList<String> list) {
         Collections.shuffle(list);
         System.out.println(list.stream().findAny().get());
     }
-
-    private static void checkAnimalStatus(String answer, Animal animal, boolean isFirstTime) {
-        if(isFirstTime){
-            if (existsOnCol(YES, answer) && findInRegex(answer)){
-                animal.setStatus(Animal.Status.YES);
-            } else if (existsOnCol(NO, answer) && findInRegex(answer)){
-                animal.setStatus(Animal.Status.NO);
-            }
-        } else {
-            try {
-                animal.setStatus(Animal.Status.valueOf(answer.toUpperCase()));
-            } catch (IllegalArgumentException e){
-            }
-        }
-
-    }
-
-    private static boolean existsOnCol(String[] array, String answer){
-        String s = answer.replaceAll("[!.]","").toUpperCase().trim();
-        return Arrays.stream(array)
-                .map(String::toUpperCase)
-                .anyMatch(s::equals);
-    }
-
-    private static String greet(LocalTime time) {
-        String greeting;
-        if (time.isAfter(LocalTime.of(5,0))
-                && time.isBefore(LocalTime.of(12,0))){
-            greeting = "Good morning";
-        } else if (time.isAfter(LocalTime.of(12,0))
-                && time.isBefore(LocalTime.of(18,0))){
-            greeting = "Good afternoon";
-        } else{
-            greeting = "Good evening";
-        }
-        return greeting + "\n";
-    }
-
 
 
 }
